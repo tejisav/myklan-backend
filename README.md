@@ -18,7 +18,7 @@ This is myKlan API and it is using :-
 
 ## Configuration
 
-- First rename sample.secrets.json to secrets.json and fill out the details.
+- First "npm install" and than rename sample.secrets.json to secrets.json and fill out the details.
 - Follow this guide https://github.com/node-apn/node-apn/wiki/Preparing-Certificates to get cert.pem and key.pem and place them in lib/assets.
 - Finally install serverless "npm install -g serverless" and add aws credentials using this guide https://serverless.com/framework/docs/providers/aws/guide/credentials/
 - If everything above is done correctly you can now deploy the API using the deploy script "./deploy.sh" and also remove it using remove script "./remove.sh"
