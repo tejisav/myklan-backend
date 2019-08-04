@@ -1,0 +1,124 @@
+service: myklan-user-management
+
+custom:
+  secrets: ${file(../../secrets.json)}
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  stage: dev
+  region: us-east-1
+  environment:
+    JWT_SECRET: ${self:custom.secrets.JWT_SECRET}
+    DB: ${self:custom.secrets.DB}
+    GOOGLE_CLIENT_ID: ${self:custom.secrets.GOOGLE_CLIENT_ID}
+  apiGateway:
+    restApiId:
+      "Fn::ImportValue": SharedGW-restApiId
+    restApiRootResourceId:
+      "Fn::ImportValue": SharedGW-rootResourceId
+
+package:
+  include:
+    - ../../lib/**
+    - ../../node_modules/**
+
+functions:
+  user-verify-token:
+    handler: lib/utils/verify-token.auth
+
+  login:
+    handler: auth/auth-handler.login
+    events:
+      - http:
+          path: login
+          method: post
+          cors: true
+
+  register:
+    handler: auth/auth-handler.register
+    events:
+      - http:
+          path: register
+          method: post
+          cors: true
+
+  verifyToken:
+    handler: auth/auth-handler.verifyToken
+    events:
+      - http:
+          path: verifyToken
+          method: get
+          cors: true
+          authorizer: user-verify-token
+
+  me:
+    handler: auth/auth-handler.me
+    events:
+      - http:
+          path: me
+          method: get
+          cors: true
+          authorizer: user-verify-token
+
+  getUsers:
+    handler: user/user-handler.getUsers
+    events:
+      - http:
+          path: getUsers
+          method: get
+          cors: true
+          
+  addMember:
+    handler: member/member-handler.addMember
+    events:
+      - http:
+          path: addMember
+          method: post
+          cors: true
+          authorizer: user-verify-token
+          
+  updateMember:
+    handler: member/member-handler.updateMember
+    events:
+      - http:
+          path: updateMember
+          method: post
+          cors: true
+          authorizer: user-verify-token
+          
+  updateDeviceToken:
+    handler: member/member-handler.updateDeviceToken
+    events:
+      - http:
+          path: updateDeviceToken
+          method: post
+          cors: true
+          authorizer: user-verify-token
+          
+  getMembers:
+    handler: member/member-handler.getMembers
+    events:
+      - http:
+          path: getMembers
+          method: get
+          cors: true
+          authorizer: user-verify-token
+          
+  getMember:
+    handler: member/member-handler.getMember
+    events:
+      - http:
+          path: getMember
+          method: get
+          cors: true
+          authorizer: user-verify-token
+          
+  deleteMember:
+    handler: member/member-handler.deleteMember
+    events:
+      - http:
+          path: deleteMember
+          method: delete
+          cors: true
+          authorizer: user-verify-token

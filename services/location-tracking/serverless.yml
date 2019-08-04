@@ -1,0 +1,55 @@
+service: myklan-location-tracking
+
+custom:
+  secrets: ${file(../../secrets.json)}
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  stage: dev
+  region: us-east-1
+  environment:
+    JWT_SECRET: ${self:custom.secrets.JWT_SECRET}
+    DB: ${self:custom.secrets.DB}
+    GOOGLE_CLIENT_ID: ${self:custom.secrets.GOOGLE_CLIENT_ID}
+  apiGateway:
+    restApiId:
+      "Fn::ImportValue": SharedGW-restApiId
+    restApiRootResourceId:
+      "Fn::ImportValue": SharedGW-rootResourceId
+
+package:
+  include:
+    - ../../lib/**
+    - ../../node_modules/**
+
+functions:
+  location-verify-token:
+    handler: lib/utils/verify-token.auth
+          
+  # requestLocation:
+  #   handler: location/location-handler.requestLocation
+  #   events:
+  #     - http:
+  #         path: locationTracking/requestLocation
+  #         method: post
+  #         cors: true
+  #         authorizer: location-verify-token
+          
+  updateLocation:
+    handler: location/location-handler.updateLocation
+    events:
+      - http:
+          path: locationTracking/updateLocation
+          method: post
+          cors: true
+          authorizer: location-verify-token
+          
+  getLocation:
+    handler: location/location-handler.getLocation
+    events:
+      - http:
+          path: locationTracking/getLocation
+          method: get
+          cors: true
+          authorizer: location-verify-token

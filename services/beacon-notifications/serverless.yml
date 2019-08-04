@@ -1,0 +1,64 @@
+service: myklan-beacon-notifications
+
+custom:
+  secrets: ${file(../../secrets.json)}
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  stage: dev
+  region: us-east-1
+  environment:
+    JWT_SECRET: ${self:custom.secrets.JWT_SECRET}
+    DB: ${self:custom.secrets.DB}
+    GOOGLE_CLIENT_ID: ${self:custom.secrets.GOOGLE_CLIENT_ID}
+  apiGateway:
+    restApiId:
+      "Fn::ImportValue": SharedGW-restApiId
+    restApiRootResourceId:
+      "Fn::ImportValue": SharedGW-rootResourceId
+
+package:
+  include:
+    - ../../lib/**
+    - ../../node_modules/**
+
+functions:
+  beacon-verify-token:
+    handler: lib/utils/verify-token.auth
+          
+  addBeacon:
+    handler: beacon/beacon-handler.addBeacon
+    events:
+      - http:
+          path: beaconNotifications/addBeacon
+          method: post
+          cors: true
+          authorizer: beacon-verify-token
+          
+  notifyMembers:
+    handler: beacon/beacon-handler.notifyMembers
+    events:
+      - http:
+          path: beaconNotifications/notifyMembers
+          method: post
+          cors: true
+          authorizer: beacon-verify-token
+          
+  getBeacons:
+    handler: beacon/beacon-handler.getBeacons
+    events:
+      - http:
+          path: beaconNotifications/getBeacons
+          method: get
+          cors: true
+          authorizer: beacon-verify-token
+          
+  deleteBeacon:
+    handler: beacon/beacon-handler.deleteBeacon
+    events:
+      - http:
+          path: beaconNotifications/deleteBeacon
+          method: delete
+          cors: true
+          authorizer: beacon-verify-token
